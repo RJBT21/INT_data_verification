@@ -1,0 +1,9 @@
+LOCAL_SERVER_IP: 127.0.0.1
+LISTEN_PORT : 6688
+
+MYSQL:
+  HOST: 'localhost'
+  PORT: '3306'
+  USER: 'root'
+  PASSWORD: '123456'
+  DATABASE_NAME: int_verification
