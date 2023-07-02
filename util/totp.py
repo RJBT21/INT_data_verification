@@ -27,6 +27,11 @@ class TOTP_util:
         print('** remain time ** -> ' + str(time_remaining))
         return time_remaining
 
+    def get_remain_time_at(self, timestamp):
+        time_remaining = self.totp.interval - timestamp % self.totp.interval
+        print('** [at] remain time ** -> ' + str(time_remaining))
+        return time_remaining
+
     def get_local_time(self):
         now_time = datetime.now()
         print(now_time)
@@ -61,7 +66,7 @@ def totp_test():
 
 def totp_tool_test_2():
     totp_code_length = 10
-    valid_interval = 10
+    valid_interval = 30
     secret = pyotp.random_base32()
     print(secret)
     # print(datetime.now().timestamp())
@@ -74,38 +79,73 @@ def totp_tool_test_2():
     print(timestamp_float)
 
     totp_tool1 = TOTP_util(secret=secret, totp_code_length=totp_code_length, valid_interval=valid_interval)
+    time.sleep(3)
     totp_tool2 = TOTP_util(secret=secret, totp_code_length=totp_code_length, valid_interval=valid_interval)
-    
-    pw1 = totp_tool1.generate_totp_code()
-    pw2 = totp_tool2.generate_totp_code()
     totp_tool1.get_remain_time()
     totp_tool2.get_remain_time()
 
-    totp_tool1.verify(pw1)
-    totp_tool2.verify(pw1)
+    base_timestamp = datetime.now().timestamp() - 60 * 60 * 2
+    cur_timestamp = datetime.now().timestamp()
+    running_timestamp = cur_timestamp - base_timestamp
+    print(running_timestamp)
+    
+    pw1 = totp_tool1.generate_totp_code(running_timestamp - 1)
+    totp_tool1.get_remain_time_at(running_timestamp - 1)
+    totp_tool2.get_remain_time_at(running_timestamp - 1)
 
-    totp_tool1.verify(pw2)
-    totp_tool2.verify(pw2)
+    pw1 = totp_tool1.generate_totp_code(running_timestamp)
+    totp_tool1.get_remain_time_at(running_timestamp)
+    totp_tool2.get_remain_time_at(running_timestamp)
+    # pw1 = totp_tool1.generate_totp_code(running_timestamp + 1)
+
+    pw2 = totp_tool2.generate_totp_code(running_timestamp)
+    totp_tool1.get_remain_time_at(running_timestamp)
+    totp_tool2.get_remain_time_at(running_timestamp)
+
+    pw2 = totp_tool2.generate_totp_code(running_timestamp + 1)
+    totp_tool1.get_remain_time_at(running_timestamp + 1)
+    totp_tool2.get_remain_time_at(running_timestamp + 1)
+
+    totp_tool1.get_remain_time()
+    totp_tool2.get_remain_time()
+
+    verification_timestamp = datetime.now().timestamp() - base_timestamp + 23
+
+
+    totp_tool1.verify(pw1, verification_timestamp)
+    totp_tool2.verify(pw1, verification_timestamp)
+
+    totp_tool1.verify(pw2, verification_timestamp)
+    totp_tool2.verify(pw2, verification_timestamp)
 
 def totp_tool_test():
     totp_code_length = 10
     valid_interval = 10
-    totp_tool = TOTP_util(totp_code_length=totp_code_length, valid_interval=valid_interval)
+    secret = pyotp.random_base32()
+    totp_tool = TOTP_util(secret= secret, totp_code_length=totp_code_length, valid_interval=valid_interval)
 
-    pw = totp_tool.generate_totp_code()
+    base_timestamp = datetime.now().timestamp() - 60 * 60 * 2
+    cur_timestamp = datetime.now().timestamp()
+    running_timestamp = cur_timestamp - base_timestamp
+    print(running_timestamp)
+
+    pw = totp_tool.generate_totp_code(cur_timestamp)
     totp_tool.get_local_time()
     totp_tool.get_remain_time()
 
-    totp_tool.verify(pw)
+    totp_tool.verify(pw, datetime.now().timestamp())
     totp_tool.get_local_time()
     totp_tool.get_remain_time()
 
     for i in range(10):
         time.sleep(1)
         print('-------waited 1 secs---------' + 'order ' + str(i))
-        totp_tool.generate_totp_code()
+        cur_timestamp = datetime.now().timestamp()
+        running_timestamp = cur_timestamp - base_timestamp
+        print(running_timestamp)
+        totp_tool.generate_totp_code(cur_timestamp)
         totp_tool.get_remain_time()
-        totp_tool.verify(pw)
+        totp_tool.verify(pw, datetime.now().timestamp())
         totp_tool.get_local_time()
     
 def totp_tool_test_3():
@@ -123,11 +163,11 @@ def totp_tool_test_3():
 
     totp_tool.get_remain_time()
     
-    verification_timestamp = datetime.now().timestamp() - base_timestamp
+    verification_timestamp = datetime.now().timestamp() - base_timestamp + 29
     totp_tool.verify(pw, verification_timestamp)
 
 if __name__ == '__main__':
     # totp_test()
     # totp_tool_test()
-    # totp_tool_test_2()
-    totp_tool_test_3()
+    totp_tool_test_2()
+    # totp_tool_test_3()

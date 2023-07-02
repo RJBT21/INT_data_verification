@@ -6,6 +6,9 @@ sys.path.append('..')
 from util.totp import TOTP_util
 from util.mysql_util import MysqlDB
 from datetime import datetime
+from util.packet_receiver import UdpReceiver
+import threading
+
 app = Flask(__name__)
 
 def read_yaml(path):
@@ -36,6 +39,10 @@ def app_init():
         user= app.config['mysql_user_name'], 
         password= app.config['mysql_password'],
         db= app.config['mysql_database_name'])
+
+    app.config['udp_receiver'] = UdpReceiver(interface= 'ens33')
+
+    sniff_int_packets()
 
 def add_switch_info(data):
     sql_dict = {}
@@ -179,7 +186,11 @@ def verification_totp_at_switch(switch_id,totp_code):
     print("---- verfication timestamp ----")
     print(verification_timestamp)
     print("---- totp_code valid remain time ----")
-    totp_tool.get_remain_time()
+    totp_tool.get_remain_time_at(verification_timestamp)
+
+    # add '0' to totp_code's head to up totp_code_length
+    if totp_code_length != len(totp_code):
+        totp_code = '0' * (totp_code_length - len(totp_code))  + totp_code
 
     totp_verification_result = totp_tool.verify(totp_code= totp_code, timestamp= verification_timestamp)
     if totp_verification_result:
@@ -188,7 +199,35 @@ def verification_totp_at_switch(switch_id,totp_code):
         verification_result = [False, 'totp verification failed.']
     return verification_result
 
+def sniff_int_packets():
+    print('--- sniff int process initing... ---')
+    udp_receiver = app.config['udp_receiver']
+    def run_job_udp_sniff():
+        udp_receiver.udp_sniff()
+        
+    
+    def run_job_mq_get():
+        mq = udp_receiver.message_queue
+        while True:
+            while mq.empty() is not True:
+                print('** queue size: {} **'.format(mq.qsize()))
+                print("--- message geted ---")
+                message = mq.get()
+                # print(message)
+                switch_id = 's' + str(message['switch_id'])
+                totp_code = str(message['totp_code'])
+                print('--- totp verifying switch_id:{} , totp_code:{} ---'.format(switch_id, totp_code))
+                result = verification_totp_at_switch(switch_id, totp_code)
+                print("--- packet verification result: {}".format(result))
+                # print(threading.enumerate())
+    
+    thread_sniff = threading.Thread(target=run_job_udp_sniff)
+    thread_sniff.start()
+    thread_mq_get = threading.Thread(target=run_job_mq_get)
+    thread_mq_get.start()
+
+
 if __name__ == '__main__':
     print(os.path)
     app_init()
-    app.run(debug = True, host = app.config['local_server_ip'], port = app.config['listen_port'])
+    app.run(debug = False, host = app.config['local_server_ip'], port = app.config['listen_port'])
