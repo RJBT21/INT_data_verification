@@ -4,7 +4,7 @@ import os
 import sys
 from datetime import datetime
 sys.path.append('..')
-from util.totp import TOTP_util
+from util.totp import TOTPUtil
 
 app = Flask(__name__)
 
@@ -29,7 +29,7 @@ def totp_code_config():
     totp_code_length = data['totp_code_length']
     valid_interval = data['valid_interval']
     secret = data['secret']
-    app.config['totp_tool'] = TOTP_util(secret= secret, totp_code_length= totp_code_length, valid_interval= valid_interval)
+    app.config['totp_tool'] = TOTPUtil(secret= secret, totp_code_length= totp_code_length, valid_interval= valid_interval)
     return make_response('succeed', 200)
 
 @app.route('/get_password', methods = ['GET'])

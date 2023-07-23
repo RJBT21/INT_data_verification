@@ -3,7 +3,7 @@ import time
 from datetime import datetime
 from copy import deepcopy
 
-class TOTP_util:
+class TOTPUtil:
     def __init__(self, secret, totp_code_length, valid_interval) -> None:
         self.totp_code_length = totp_code_length
         self.valid_interval = valid_interval
@@ -78,9 +78,9 @@ def totp_tool_test_2():
     timestamp_float = float(timestamp_str)
     print(timestamp_float)
 
-    totp_tool1 = TOTP_util(secret=secret, totp_code_length=totp_code_length, valid_interval=valid_interval)
+    totp_tool1 = TOTPUtil(secret=secret, totp_code_length=totp_code_length, valid_interval=valid_interval)
     time.sleep(3)
-    totp_tool2 = TOTP_util(secret=secret, totp_code_length=totp_code_length, valid_interval=valid_interval)
+    totp_tool2 = TOTPUtil(secret=secret, totp_code_length=totp_code_length, valid_interval=valid_interval)
     totp_tool1.get_remain_time()
     totp_tool2.get_remain_time()
 
@@ -122,7 +122,7 @@ def totp_tool_test():
     totp_code_length = 10
     valid_interval = 10
     secret = pyotp.random_base32()
-    totp_tool = TOTP_util(secret= secret, totp_code_length=totp_code_length, valid_interval=valid_interval)
+    totp_tool = TOTPUtil(secret= secret, totp_code_length=totp_code_length, valid_interval=valid_interval)
 
     base_timestamp = datetime.now().timestamp() - 60 * 60 * 2
     cur_timestamp = datetime.now().timestamp()
@@ -158,7 +158,7 @@ def totp_tool_test_3():
     running_timestamp = cur_timestamp - base_timestamp
     print(running_timestamp)
 
-    totp_tool = TOTP_util(secret= secret, totp_code_length= totp_code_length, valid_interval= valid_interval)
+    totp_tool = TOTPUtil(secret= secret, totp_code_length= totp_code_length, valid_interval= valid_interval)
     pw = totp_tool.generate_totp_code(running_timestamp)
 
     totp_tool.get_remain_time()

@@ -1,6 +1,6 @@
 from scapy.all import *
 
-class Packet_Generator(object):
+class PacketGenerator(object):
     def __init__(self) -> None:
         pass
 
@@ -40,7 +40,7 @@ class Packet_Generator(object):
 
 
 if __name__ == '__main__':
-    packet_sender = Packet_Generator()
+    packet_sender = PacketGenerator()
     packet_sender.send(interface= 'ens33', dst_ip= '2001:db8:cafe:f000::')
     switch_id = 1
     totp_code = '0703361050'

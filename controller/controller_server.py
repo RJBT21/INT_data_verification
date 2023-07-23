@@ -3,7 +3,7 @@ import yaml
 import os
 import sys
 sys.path.append('..')
-from util.totp import TOTP_util
+from util.totp import TOTPUtil
 from util.mysql_util import MysqlDB
 from datetime import datetime
 from util.packet_receiver import UdpReceiver
@@ -105,7 +105,7 @@ def totp_code_config():
     totp_code_length = data['totp_code_length']
     valid_interval = data['valid_interval']
     secret = data['secret']
-    app.config['totp_tool'] = TOTP_util(secret= secret, totp_code_length= totp_code_length, valid_interval= valid_interval)
+    app.config['totp_tool'] = TOTPUtil(secret= secret, totp_code_length= totp_code_length, valid_interval= valid_interval)
     return make_response('succeed', 200)
 
 @app.route('/password_verification', methods = ['POST'])
@@ -181,7 +181,7 @@ def verification_totp_at_switch(switch_id,totp_code):
     base_timestamp = float(echo_timestamp)
     print("---- base timestamp ----")
     print(base_timestamp)
-    totp_tool = TOTP_util(secret= secret_key, totp_code_length= totp_code_length, valid_interval= valid_interval)
+    totp_tool = TOTPUtil(secret= secret_key, totp_code_length= totp_code_length, valid_interval= valid_interval)
     verification_timestamp = datetime.now().timestamp() - base_timestamp
     print("---- verfication timestamp ----")
     print(verification_timestamp)
@@ -230,4 +230,4 @@ def sniff_int_packets():
 if __name__ == '__main__':
     print(os.path)
     app_init()
-    app.run(debug = False, host = app.config['local_server_ip'], port = app.config['listen_port'])
+    app.run(debug = True, host = app.config['local_server_ip'], port = app.config['listen_port'])
