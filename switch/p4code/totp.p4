@@ -5,7 +5,7 @@
 /**
 ../../install/bin/bf-p4c --std p4-16 --target tofino --arch tna --bf-rt-schema tofino/bf-rt.json -o /home/tangyunyi/p4sde/bf-sde-9.7.0/test/bier/tofino -g /home/tangyunyi/p4sde/bf-sde-9.7.0/test/bier/BIER.p4
 
-/home/jia/bf-sde-9.7.0/install/bin/bf-p4c --std p4-16 --target tofino --arch tna --bf-rt-schema /home/jia/bf-sde-9.7.0/install/include/tofino/bf-rt.json -o /home/jia/bf-sde-9.7.0/totp/tofino -g totp.p4
+/home/jia/bf-sde-9.7.0/install/bin/bf-p4c --std p4-16 --target tofino --arch tna --bf-rt-schema /home/jia/bf-sde-9.7.0/totp/tofino/bf-rt.json -o /home/jia/bf-sde-9.7.0/totp/tofino -g totp.p4
 **/
 
 /*************************************************************************
@@ -193,7 +193,7 @@ action _drop(){
     ig_dprsr_md.drop_ctl = 1;
 }
 
-action totp_implement(bit<32> totp_code){
+action totp_implement(bit<32> totp_code, bit<9> port){
     hdr.ah.setValid();
     hdr.ah.seq = totp_code; // totp
     hdr.ah.nextHeader = 17;
@@ -201,6 +201,11 @@ action totp_implement(bit<32> totp_code){
     hdr.ipv6.payloadLength = hdr.ipv6.payloadLength + 20;
     hdr.ah.reserved = 123;
     hdr.ah.spi = 456;
+    ig_tm_md.ucast_egress_port = port;
+} 
+
+action send_ipv6(bit<9> port) {
+    ig_tm_md.ucast_egress_port = port;
 }
 
 // table encap{    //插入BIER头
@@ -234,7 +239,20 @@ table totp{
         totp_implement;
         _drop;
     }
-    key = {}
+    key = {
+        hdr.ipv6.dstAddr : exact;
+        }
+    size = 1024;
+}
+
+table send{
+    actions = {
+        send_ipv6;
+        _drop;
+    }
+    key = {
+        hdr.ipv6.dstAddr : exact;
+    }
     size = 1024;
 }
 
@@ -245,7 +263,7 @@ apply{
     // bift.apply();
 
     totp.apply();
-    
+    send.apply();
     //  if(!bift.apply().hit)
     //  {
     //      encap.apply();

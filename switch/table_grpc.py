@@ -5,10 +5,10 @@ import bfrt_grpc.client as gc
 from bfrt_grpc.client import KeyTuple as KT
 from bfrt_grpc.client import DataTuple as DT
 
-class tableGrpcConnector(object):
+class TableGrpcConnector(object):
     def __init__(self, grpc_addr = "192.168.8.109:50052", client_id = 0, device_id = 0, pipe = -1) -> None:
         # Connect to BF Runtime Server              192.168.8.108:50052 10.112.91.158:50052
-        self.interface = gc.ClientInterface(grpc_addr = "192.168.8.109:50052", client_id = 0, device_id = 0)
+        self.interface = gc.ClientInterface(grpc_addr = grpc_addr, client_id = client_id, device_id = device_id)
         print('Connected to BF Runtime Server')
 
         # Get the information about the running program on the bfrt server.
