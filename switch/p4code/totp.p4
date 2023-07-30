@@ -56,6 +56,17 @@ header AH_h{
     bit<64> icv;                //Integrity Check Value-ICV (variable)
 }
 
+header inthdr_h {
+    bit<8>  device_no;
+    bit<9>  ingress_port;
+    bit<9>  egress_port;
+    bit<48> ingress_global_timestamp;
+    bit<32> enq_timestamp;
+    bit<19> enq_qdepth;
+    bit<32> deq_timedelta;
+    bit<19> deq_qdepth;  
+}
+
 header UDP_h {
     bit<16> srcPort;
     bit<16> dstPort;
@@ -83,7 +94,8 @@ struct my_ingress_headers_t{
     ICMPv6_h    icmpv6;
     AH_h        ah;
     UDP_h       udp;
-    
+    inthdr_h    inthdr;
+
 }
 
     /******  G L O B A L   I N G R E S S   M E T A D A T A  *********/
@@ -198,9 +210,11 @@ action totp_implement(bit<32> totp_code, bit<9> port){
     hdr.ah.seq = totp_code; // totp
     hdr.ah.nextHeader = 17;
     hdr.ah.payloadLength = 20;
+    hdr.ipv6.nextHeader = 51;
     hdr.ipv6.payloadLength = hdr.ipv6.payloadLength + 20;
-    hdr.ah.reserved = 123;
+    hdr.ah.reserved = 0;
     hdr.ah.spi = 456;
+    hdr.ah.icv = 0;
     ig_tm_md.ucast_egress_port = port;
 } 
 
@@ -331,6 +345,8 @@ struct my_egress_headers_t {
     AH_h ah;
     // segment[10] segment_list;
     UDP_h udp;
+    inthdr_h inthdr;
+    
 }
 
     /********  G L O B A L   E G R E S S   M E T A D A T A  *********/
@@ -411,8 +427,35 @@ control Egress(
         eg_dprsr_md.drop_ctl = 1;
     }
     
+    @name("do_int") 
+    action do_int() {
+        hdr.udp.udpLength = hdr.udp.udpLength + 16w22;
+        hdr.udp.checksum = 16w0;
+        hdr.ipv6.payloadLength=hdr.ipv6.payloadLength + 16w22;
+        hdr.inthdr.setValid();
+        // hdr.inthdr.device_no = meta.int_metadata.device_no;
+        // hdr.inthdr.ingress_port = eg_oport_md.ingress_port;
+        // hdr.inthdr.egress_port = eg_intr_md.egress_port;
+        hdr.inthdr.ingress_global_timestamp = eg_prsr_md.global_tstamp;
+        // hdr.inthdr.enq_timestamp = eg_intr_md.enq_timestamp;
+        // hdr.inthdr.enq_qdepth = eg_intr_md.enq_qdepth;
+        // hdr.inthdr.deq_timedelta = eg_intr_md.deq_timedelta;
+        // hdr.inthdr.deq_qdepth = eg_intr_md.deq_qdepth;
+    }
+
+    @name("udp_int")
+    table udp_int {
+        actions = {
+            do_int;
+            _drop;
+        }
+        key = {}
+        size = 1024;
+        default_action = do_int();
+    }
 
     apply {
+        udp_int.apply();
         // if(mod_bier.apply().hit){}
         // else if(eg_intr_md.egress_port == RECIRCULATE_PORT)
         // {
@@ -442,6 +485,7 @@ control EgressDeparser(packet_out pkt,
         pkt.emit(hdr.ah);
         pkt.emit(hdr.icmpv6);
         pkt.emit(hdr.udp);
+        pkt.emit(hdr.inthdr);
     }
 }
 

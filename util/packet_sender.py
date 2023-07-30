@@ -54,7 +54,7 @@ if __name__ == '__main__':
     switch_id = 1
     totp_code = '0703361050'
     # packet_sender.send_extension_AH(interface= 'ens33', switch_id= switch_id, totp_code= totp_code)
-    for i in range(10):
+    for i in range(5):
         packet_sender.send_ipv6(interface= 'veth3')
         time.sleep(2)
     # totp_code = '0663671716'
