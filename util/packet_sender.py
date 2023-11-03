@@ -52,11 +52,11 @@ if __name__ == '__main__':
     packet_sender = PacketGenerator()
     # packet_sender.send(interface= 'ens33', dst_ip= '2001:db8:cafe:f000::')
     switch_id = 1
-    totp_code = '0703361050'
-    # packet_sender.send_extension_AH(interface= 'ens33', switch_id= switch_id, totp_code= totp_code)
-    for i in range(5):
-        packet_sender.send_ipv6(interface= 'veth3')
-        time.sleep(2)
+    totp_code = '0511391894'
+    packet_sender.send_extension_AH(interface= 'ens33', switch_id= switch_id, totp_code= totp_code)
+    # for i in range(5):
+    #     packet_sender.send_ipv6(interface= 'veth3')
+    #     time.sleep(2)
     # totp_code = '0663671716'
     # totp_code_encod_utf8 = totp_code.encode('utf8')
     # print(totp_code_encod_utf8)

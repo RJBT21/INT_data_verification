@@ -46,6 +46,7 @@ def app_init():
 
 def add_switch_info(data):
     sql_dict = {}
+    # sql_dict['id'] = 'null'
     sql_dict['switch_id'] = data['switch_id']
     sql_dict['secret_key'] = data['secret_key']
     sql_dict['echo_timestamp'] = data['echo_timestamp']
@@ -60,12 +61,13 @@ def add_switch_info(data):
     SQL = SQL.strip(',') + ')'
     SQL = SQL + ' values ('
     for key in key_list:
-        if isinstance(sql_dict[key], int):
+        if isinstance(sql_dict[key], int) or isinstance(sql_dict[key], float):
             SQL = SQL + str(sql_dict[key]) + ','
         elif isinstance(sql_dict[key], str):
             SQL = SQL + '\"' + sql_dict[key] + '\"' + ','
     SQL = SQL.strip(',') + ')'
     try:
+        print(SQL)
         app.config['mysql_tool'].exec_db(SQL)
         return True
     except:
@@ -126,8 +128,10 @@ def totp_code_verification():
 @app.route('/switch_info',methods = ['POST'])
 def switch_info_add():
     data = request.get_json()
+    print(data)
     result = add_switch_info(data)
     if result:
+        
         response = make_response('succeed',200)
     else:
         response = make_response('failed',400)

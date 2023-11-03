@@ -5,7 +5,7 @@
 /**
 ../../install/bin/bf-p4c --std p4-16 --target tofino --arch tna --bf-rt-schema tofino/bf-rt.json -o /home/tangyunyi/p4sde/bf-sde-9.7.0/test/bier/tofino -g /home/tangyunyi/p4sde/bf-sde-9.7.0/test/bier/BIER.p4
 
-/home/jia/bf-sde-9.7.0/install/bin/bf-p4c --std p4-16 --target tofino --arch tna --bf-rt-schema /home/jia/bf-sde-9.7.0/totp/tofino/bf-rt.json -o /home/jia/bf-sde-9.7.0/totp/tofino -g totp.p4
+/home/jia/bf-sde-9.7.0/install/bin/bf-p4c --std p4-16 --target tofino --arch tna -DTOFINO --bf-rt-schema /home/jia/bf-sde-9.7.0/totp/tofino/bf-rt.json -o /home/jia/bf-sde-9.7.0/totp/tofino -g totp.p4
 **/
 
 /*************************************************************************
@@ -61,10 +61,11 @@ header inthdr_h {
     bit<9>  ingress_port;
     bit<9>  egress_port;
     bit<48> ingress_global_timestamp;
-    bit<32> enq_timestamp;
+    bit<18> enq_timestamp;
     bit<19> enq_qdepth;
     bit<32> deq_timedelta;
     bit<19> deq_qdepth;  
+    bit<6>  reverve;
 }
 
 header UDP_h {
@@ -433,14 +434,16 @@ control Egress(
         hdr.udp.checksum = 16w0;
         hdr.ipv6.payloadLength=hdr.ipv6.payloadLength + 16w22;
         hdr.inthdr.setValid();
-        // hdr.inthdr.device_no = meta.int_metadata.device_no;
-        // hdr.inthdr.ingress_port = eg_oport_md.ingress_port;
-        // hdr.inthdr.egress_port = eg_intr_md.egress_port;
+        hdr.inthdr.device_no = 0;//meta.int_metadata.device_no;
+        hdr.inthdr.ingress_port = 0; //eg_oport_md.ingress_port;
+        hdr.inthdr.egress_port = 1;//eg_intr_md.egress_port;
+
         hdr.inthdr.ingress_global_timestamp = eg_prsr_md.global_tstamp;
-        // hdr.inthdr.enq_timestamp = eg_intr_md.enq_timestamp;
-        // hdr.inthdr.enq_qdepth = eg_intr_md.enq_qdepth;
-        // hdr.inthdr.deq_timedelta = eg_intr_md.deq_timedelta;
-        // hdr.inthdr.deq_qdepth = eg_intr_md.deq_qdepth;
+        hdr.inthdr.enq_timestamp = 1;//eg_intr_md.enq_tstamp;
+        hdr.inthdr.enq_qdepth = 1;//eg_intr_md.enq_qdepth;
+        hdr.inthdr.deq_timedelta = 0;//eg_intr_md.deq_timedelta;
+        hdr.inthdr.deq_qdepth = 4;//eg_intr_md.deq_qdepth;
+        hdr.inthdr.reverve = 0;
     }
 
     @name("udp_int")

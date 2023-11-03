@@ -36,6 +36,10 @@ class TOTPUtil:
         now_time = datetime.now()
         print(now_time)
         return now_time
+    
+    @staticmethod
+    def generate_secret():
+        return pyotp.random_base32()
 
 def totp_test():
 
