@@ -428,37 +428,37 @@ control Egress(
         eg_dprsr_md.drop_ctl = 1;
     }
     
-    @name("do_int") 
-    action do_int() {
-        hdr.udp.udpLength = hdr.udp.udpLength + 16w22;
-        hdr.udp.checksum = 16w0;
-        hdr.ipv6.payloadLength=hdr.ipv6.payloadLength + 16w22;
-        hdr.inthdr.setValid();
-        hdr.inthdr.device_no = 0;//meta.int_metadata.device_no;
-        hdr.inthdr.ingress_port = 0; //eg_oport_md.ingress_port;
-        hdr.inthdr.egress_port = 1;//eg_intr_md.egress_port;
+    // @name("do_int") 
+    // action do_int() {
+    //     hdr.udp.udpLength = hdr.udp.udpLength + 16w22;
+    //     hdr.udp.checksum = 16w0;
+    //     hdr.ipv6.payloadLength=hdr.ipv6.payloadLength + 16w22;
+    //     hdr.inthdr.setValid();
+    //     hdr.inthdr.device_no = 0;//meta.int_metadata.device_no;
+    //     hdr.inthdr.ingress_port = 0; //eg_oport_md.ingress_port;
+    //     hdr.inthdr.egress_port = 1;//eg_intr_md.egress_port;
 
-        hdr.inthdr.ingress_global_timestamp = eg_prsr_md.global_tstamp;
-        hdr.inthdr.enq_timestamp = 1;//eg_intr_md.enq_tstamp;
-        hdr.inthdr.enq_qdepth = 1;//eg_intr_md.enq_qdepth;
-        hdr.inthdr.deq_timedelta = 0;//eg_intr_md.deq_timedelta;
-        hdr.inthdr.deq_qdepth = 4;//eg_intr_md.deq_qdepth;
-        hdr.inthdr.reverve = 0;
-    }
+    //     hdr.inthdr.ingress_global_timestamp = eg_prsr_md.global_tstamp;
+    //     hdr.inthdr.enq_timestamp = 1;//eg_intr_md.enq_tstamp;
+    //     hdr.inthdr.enq_qdepth = 1;//eg_intr_md.enq_qdepth;
+    //     hdr.inthdr.deq_timedelta = 0;//eg_intr_md.deq_timedelta;
+    //     hdr.inthdr.deq_qdepth = 4;//eg_intr_md.deq_qdepth;
+    //     hdr.inthdr.reverve = 0;
+    // }
 
-    @name("udp_int")
-    table udp_int {
-        actions = {
-            do_int;
-            _drop;
-        }
-        key = {}
-        size = 1024;
-        default_action = do_int();
-    }
+    // @name("udp_int")
+    // table udp_int {
+    //     actions = {
+    //         do_int;
+    //         _drop;
+    //     }
+    //     key = {}
+    //     size = 1024;
+    //     default_action = do_int();
+    // }
 
     apply {
-        udp_int.apply();
+        // udp_int.apply();
         // if(mod_bier.apply().hit){}
         // else if(eg_intr_md.egress_port == RECIRCULATE_PORT)
         // {

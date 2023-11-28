@@ -8,6 +8,9 @@ from numpy import random
 sys.path.append('..')
 from util.totp import TOTPUtil
 from util.httpClient import HttpUtil 
+from table_grpc import TableGrpcConnector
+from ipaddress import IPv6Address as ipv6
+
 app = Flask(__name__)
 
 def read_yaml(path):
@@ -25,7 +28,9 @@ def app_init():
     app.config['totp_tool'] = None
     app.config['controller_switch_init_url'] = conf['CONTROLLER_SWITCH_INIT_URL']
     app.config['controller_switch_totp_code_verification_url'] = conf['CONTROLLER_SWITCH_TOTP_CODE_VERIFICATION_URL']
+    app.config['switch_grpc_address'] = conf['SWITCH_GRPC_ADDRESS']
     initSyncController()
+    passwordAutoUpdate()
     check()
 
 @app.route('/password_config', methods = ['POST'])
@@ -63,6 +68,42 @@ def initSyncController():
                                        valid_interval= data['valid_interval'])
 
     HttpUtil.post(url=app.config['controller_switch_init_url'], data=data)
+
+def passwordAutoUpdate():
+    app.config['grpc_connector'] = TableGrpcConnector(app.config['switch_grpc_address'])
+    totp_tool = app.config['totp_tool']
+    cur_timestamp = datetime.now().timestamp() - app.config['base_timestamp']
+    remain_time = totp_tool.get_remain_time_at(cur_timestamp)
+    while(True):
+        remain_time = totp_tool.get_remain_time_at(cur_timestamp)
+        time.sleep(remain_time)
+        cur_timestamp = datetime.now().timestamp() - app.config['base_timestamp']
+        # 更新密码到P4交换机中
+        totp_code = totp_tool.generate_totp_code(cur_timestamp)
+        setPasswordToTable(totp_code)
+
+def setPasswordToTable(totp_code):
+    table_operator = app.config['grpc_connector']
+    table_name = 'totp'
+    action_name = 'totp_implement'
+
+    data_str_totp = 'name=totp_code,val=' + str(totp_code)
+    data_tuple_totp_code = table_operator.get_data_tuple_from_input(data_str_totp)
+
+    port = 2
+    data_str_port = 'name=port,val=' + str(port)
+    data_tuple_port = table_operator.get_data_tuple_from_input(data_str_port)
+    print(data_tuple_port)
+
+    ip_value = int(ipv6('fe80::1234'))
+    key_str = "name=hdr.ipv6.dstAddr,value=" + str(ip_value)
+    key_tuple = table_operator.get_key_tuple_from_input(key_str)
+
+    table_operator.clear_table(table_name=table_name)
+
+    table_operator.add_entry(table_name=table_name, key_tuples=[key_tuple], data_tuples=[data_tuple_totp_code, data_tuple_port], action_name=action_name)
+
+    print(data_tuple_totp_code)
 
 def check():
     for i in range(10):

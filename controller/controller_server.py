@@ -42,7 +42,7 @@ def app_init():
 
     app.config['udp_receiver'] = UdpReceiver(interface= 'ens33')
 
-    sniff_int_packets()
+    # sniff_int_packets()
 
 def add_switch_info(data):
     sql_dict = {}

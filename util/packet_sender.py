@@ -46,14 +46,19 @@ class PacketGenerator(object):
         packet.show()
         sendp(packet, iface= interface)
 
+    def send_ipv4(self, interface):
+        packet=Ether(src = 'f6:61:c0:6a:00:00')/IP(src='10.0.1.1',dst='10.0.2.2')/UDP(dport=53)
+        packet.show()
+        sendp(packet, iface= interface)
+
 
 
 if __name__ == '__main__':
     packet_sender = PacketGenerator()
     # packet_sender.send(interface= 'ens33', dst_ip= '2001:db8:cafe:f000::')
-    switch_id = 1
-    totp_code = '0511391894'
-    packet_sender.send_extension_AH(interface= 'ens33', switch_id= switch_id, totp_code= totp_code)
+    # switch_id = 1
+    # totp_code = '0511391894'
+    # packet_sender.send_extension_AH(interface= 'veth132', switch_id= switch_id, totp_code= totp_code)
     # for i in range(5):
     #     packet_sender.send_ipv6(interface= 'veth3')
     #     time.sleep(2)
@@ -64,3 +69,6 @@ if __name__ == '__main__':
     # print(totp_code_encoded_int)
     # totp_code_bytes = bytes(totp_code_encoded_int)
     # print(totp_code_bytes)
+
+    interface = 'veth20'
+    packet_sender.send_ipv4(interface=interface)
