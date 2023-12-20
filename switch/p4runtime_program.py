@@ -27,33 +27,44 @@ if __name__ == '__main__':
     print(totp_code)
     grpc_addr = '127.0.0.1:50052'
     table_operator = TableGrpcConnector(grpc_addr=grpc_addr)
-    table_name = 'totp'
-    action_name = 'totp_implement'
-    data_str_totp = 'name=totp_code,val=' + str(totp_code)
-    data_tuple_totp_code = table_operator.get_data_tuple_from_input(data_str_totp)
-    print(data_tuple_totp_code)
+    # table_name = 'totp'
+    # action_name = 'totp_implement'
+    # data_str_totp = 'name=totp_code,val=' + str(totp_code)
+    # data_tuple_totp_code = table_operator.get_data_tuple_from_input(data_str_totp)
+    # print(data_tuple_totp_code)
 
-    port = 2
-    data_str_port = 'name=port,val=' + str(port)
-    data_tuple_port = table_operator.get_data_tuple_from_input(data_str_port)
-    print(data_tuple_port)
+    # port = 2
+    # data_str_port = 'name=port,val=' + str(port)
+    # data_tuple_port = table_operator.get_data_tuple_from_input(data_str_port)
+    # print(data_tuple_port)
 
-    ip_value = int(ipv6('fe80::1234'))
-    key_str = "name=hdr.ipv6.dstAddr,value=" + str(ip_value)
-    key_tuple = table_operator.get_key_tuple_from_input(key_str)
-    print(key_tuple)
-    table_operator.add_entry(table_name=table_name, key_tuples=[key_tuple], data_tuples=[data_tuple_totp_code, data_tuple_port], action_name=action_name)
+    # ip_value = int(ipv6('fe80::1234'))
+    # key_str = "name=hdr.ipv6.dstAddr,value=" + str(ip_value)
+    # key_tuple = table_operator.get_key_tuple_from_input(key_str)
+    # print(key_tuple)
+    # table_operator.add_entry(table_name=table_name, key_tuples=[key_tuple], data_tuples=[data_tuple_totp_code, data_tuple_port], action_name=action_name)
     
-    table_name = 'send'
-    action_name = 'send_ipv6'
+    # table_name = 'send'
+    # action_name = 'send_ipv6'
 
-    port = 2
-    data_str_port = 'name=port,val=' + str(port)
-    data_tuple_port = table_operator.get_data_tuple_from_input(data_str_port)
-    print(data_tuple_port)
+    # port = 2
+    # data_str_port = 'name=port,val=' + str(port)
+    # data_tuple_port = table_operator.get_data_tuple_from_input(data_str_port)
+    # print(data_tuple_port)
 
-    ip_value = int(ipv6('fe80::2345'))
-    key_str = "name=hdr.ipv6.dstAddr,value=" + str(ip_value)
+    # ip_value = int(ipv6('fe80::2345'))
+    # key_str = "name=hdr.ipv6.dstAddr,value=" + str(ip_value)
+    # key_tuple = table_operator.get_key_tuple_from_input(key_str)
+    # print(key_tuple)
+    # table_operator.add_entry(table_name=table_name, key_tuples=[key_tuple], data_tuples=[data_tuple_port], action_name=action_name)
+
+    table_name = 'Int_transit.tb_totp_code'
+    action_name = 'int_totp_header_set'
+
+    key_str = 'name=hdr.int_header.instruction_mk,value=' + str(int(0xFF00))
     key_tuple = table_operator.get_key_tuple_from_input(key_str)
-    print(key_tuple)
-    table_operator.add_entry(table_name=table_name, key_tuples=[key_tuple], data_tuples=[data_tuple_port], action_name=action_name)
+
+    data_str = 'name=totp_code,val=4294967295'
+    data_tuple = table_operator.get_data_tuple_from_input(data_str)
+
+    table_operator.mod_entry(table_name=table_name, key_tuples=[key_tuple], data_tuples=[data_tuple], action_name=action_name)
