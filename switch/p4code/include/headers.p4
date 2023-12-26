@@ -160,19 +160,6 @@ header int_report_fixed_header_t {
     bit<32> ingress_tstamp;
 }
 
-#ifdef BMV2
-struct int_metadata_t {
-    bit<1>  source;    // is INT source functionality enabled
-    bit<1>  sink;        // is INT sink functionality enabled
-    bit<32> switch_id;  // INT switch id is configured by network controller
-    bit<16> insert_byte_cnt;  // counter of inserted INT bytes
-    bit<8>  int_hdr_word_len;  // counter of inserted INT words
-    bit<1>  remove_int;           // indicator that all INT headers and data must be removed at egress for the processed packet 
-    bit<16> sink_reporting_port;    // on which port INT reports must be send to INT collector
-    bit<64> ingress_tstamp;   // pass ingress timestamp from Ingress pipeline to Egress pipeline
-    bit<16> ingress_port;  // pass ingress port from Ingress pipeline to Egress pipeline 
-}
-#elif TOFINO
 // in the header of tofino, the metadata should be a multiple of 8 bits.
 header int_metadata_t {
     bit<8> mirror_type; //at the top to act as common header
@@ -195,7 +182,6 @@ header mirror_h{
     bit<48> ingress_tstamp;
     bit<16> ingress_port;  
 }
-#endif
 
 struct layer34_metadata_t {
     bit<32> ip_src;
@@ -212,17 +198,16 @@ struct metadata {
     int_metadata_t       int_metadata;
     intl4_shim_t         int_shim;
     layer34_metadata_t   layer34_metadata;
-#ifdef TOFINO
     bit<16>              int_len_bytes;
     mirror_h             mirror_md;
-#endif
 }
 
 header int_data_t {
     // Enough room for previous 4 nodes worth of data
     varbit<1600> data;
 }
-
+// 1703584012.465103
+// 1911612500000
 
 struct headers {
     // INT report headers
@@ -255,6 +240,3 @@ struct headers {
     // INT metadata of previous nodes
     int_data_t                int_data;
 }
-
-
-#endif

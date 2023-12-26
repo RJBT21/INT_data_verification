@@ -75,35 +75,57 @@ class TableGrpcConnector(object):
         print("--------------------------------------------------------------------\n Added entry \n | key: %s , data: % s , action_name: %s | \n to table %s \n --------------------------------------------------------------------\n" % ([key_tuple.__str__() for key_tuple in key_tuples], [data_tuple.__str__() for data_tuple in data_tuples], action_name, table_name)) 
 
     def mod_entry(self, table_name,key_tuples, data_tuples, action_name):
-            '''
-            @para key_tuple 
-            @para data_tuple 
-            @para action_name 'Egress.mod_bs'
-                key_list.append(table.make_key([gc.KeyTuple(name = 'eg_intr_md.egress_port', value = 3)]))
-                data_list.append(table.make_data([gc.DataTuple(name = 'dstaddr', val = 0x123456)],action_name = 'Egress.mod_bs'))
-            '''
-            table = self.bfrt_info.table_dict[table_name]
-            print("modifying entry to table %s" % table_name)
-            key_list = list()
-            data_list = list()
-            keyTuple_list = list()
-            dataTuple_list = list()
+        '''
+        @para key_tuple 
+        @para data_tuple 
+        @para action_name 'Egress.mod_bs'
+            key_list.append(table.make_key([gc.KeyTuple(name = 'eg_intr_md.egress_port', value = 3)]))
+            data_list.append(table.make_data([gc.DataTuple(name = 'dstaddr', val = 0x123456)],action_name = 'Egress.mod_bs'))
+        '''
+        table = self.bfrt_info.table_dict[table_name]
+        # print("modifying entry to table %s" % table_name)
+        key_list = list()
+        data_list = list()
+        keyTuple_list = list()
+        dataTuple_list = list()
 
-            for key_tuple in key_tuples:
-                keyTuple_list.append(gc.KeyTuple(name = key_tuple.name, value = key_tuple.value, mask = key_tuple.mask, prefix_len = key_tuple.prefix_len, low = key_tuple.low, high = key_tuple.high)) 
-            keys = table.make_key(keyTuple_list)
-            key_list.append(keys)
+        for key_tuple in key_tuples:
+            keyTuple_list.append(gc.KeyTuple(name = key_tuple.name, value = key_tuple.value, mask = key_tuple.mask, prefix_len = key_tuple.prefix_len, low = key_tuple.low, high = key_tuple.high)) 
+        keys = table.make_key(keyTuple_list)
+        key_list.append(keys)
 
-            for data_tuple in data_tuples:
-                dataTuple_list.append(gc.DataTuple(name = data_tuple.name, val = data_tuple.val, float_val = data_tuple.float_val, str_val = data_tuple.str_val, int_arr_val = data_tuple.int_arr_val, bool_arr_val = data_tuple.bool_arr_val, bool_val = data_tuple.bool_val, container_arr_val = data_tuple.container_arr_val, str_arr_val = data_tuple.str_arr_val))
-            datas = table.make_data(dataTuple_list,action_name)
-            data_list.append(datas)
+        for data_tuple in data_tuples:
+            dataTuple_list.append(gc.DataTuple(name = data_tuple.name, val = data_tuple.val, float_val = data_tuple.float_val, str_val = data_tuple.str_val, int_arr_val = data_tuple.int_arr_val, bool_arr_val = data_tuple.bool_arr_val, bool_val = data_tuple.bool_val, container_arr_val = data_tuple.container_arr_val, str_arr_val = data_tuple.str_arr_val))
+        datas = table.make_data(dataTuple_list,action_name)
+        data_list.append(datas)
 
-            table.entry_mod(self.target, key_list, data_list)
-            print("--------------------------------------------------------------------\n Modifyed entry \n | key: %s , data: % s , action_name: %s | \n to table %s \n --------------------------------------------------------------------\n" % ([key_tuple.__str__() for key_tuple in key_tuples], [data_tuple.__str__() for data_tuple in data_tuples], action_name, table_name)) 
+        table.entry_mod(self.target, key_list, data_list)
+        # print("--------------------------------------------------------------------\n Modifyed entry \n | key: %s , data: % s , action_name: %s | \n to table %s \n --------------------------------------------------------------------\n" % ([key_tuple.__str__() for key_tuple in key_tuples], [data_tuple.__str__() for data_tuple in data_tuples], action_name, table_name)) 
+
+    def set_default_entry(self, table_name, data_tuples, action_name):
+        '''
+        @para key_tuple 
+        @para data_tuple 
+        @para action_name 'Egress.mod_bs'
+            key_list.append(table.make_key([gc.KeyTuple(name = 'eg_intr_md.egress_port', value = 3)]))
+            data_list.append(table.make_data([gc.DataTuple(name = 'dstaddr', val = 0x123456)],action_name = 'Egress.mod_bs'))
+        '''
+        table = self.bfrt_info.table_dict[table_name]
+        # print("modifying entry to table %s" % table_name)
+        key_list = list()
+        data_list = list()
+        keyTuple_list = list()
+        dataTuple_list = list()
+
+        for data_tuple in data_tuples:
+            dataTuple_list.append(gc.DataTuple(name = data_tuple.name, val = data_tuple.val, float_val = data_tuple.float_val, str_val = data_tuple.str_val, int_arr_val = data_tuple.int_arr_val, bool_arr_val = data_tuple.bool_arr_val, bool_val = data_tuple.bool_val, container_arr_val = data_tuple.container_arr_val, str_arr_val = data_tuple.str_arr_val))
+        datas = table.make_data(dataTuple_list,action_name)
+
+        table.default_entry_set(self.target, datas)
+        # print("--------------------------------------------------------------------\n Seted defalut entry \n | data: % s , action_name: %s | \n to table %s \n --------------------------------------------------------------------\n" % ([key_tuple.__str__() for key_tuple in key_tuples], [data_tuple.__str__() for data_tuple in data_tuples], action_name, table_name)) 
 
     def get_key_tuple_from_input(self, keys):
-        print('input key: name=, value=, mask=, prefix_len=, low=, high=\n')
+        # print('input key: name=, value=, mask=, prefix_len=, low=, high=\n')
         key_kvs = keys.split(',')
         key_dic = dict()
         for key_kv in key_kvs:
@@ -117,7 +139,7 @@ class TableGrpcConnector(object):
         return key_tuple
 
     def get_data_tuple_from_input(self, datas):
-        print('input data: name, val=None, float_val=None, str_val=None, int_arr_val=None, bool_arr_val=None, bool_val=None, container_arr_val=None, str_arr_val=None\n')
+        # print('input data: name, val=None, float_val=None, str_val=None, int_arr_val=None, bool_arr_val=None, bool_val=None, container_arr_val=None, str_arr_val=None\n')
         data_kvs = datas.split(',')
         data_dic = dict()
         for data_kv in data_kvs:

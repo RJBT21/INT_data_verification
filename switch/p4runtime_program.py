@@ -58,13 +58,25 @@ if __name__ == '__main__':
     # print(key_tuple)
     # table_operator.add_entry(table_name=table_name, key_tuples=[key_tuple], data_tuples=[data_tuple_port], action_name=action_name)
 
-    table_name = 'Int_transit.tb_totp_code'
-    action_name = 'int_totp_header_set'
+    # table_name = 'Int_transit.tb_totp_code'
+    # action_name = 'int_totp_header_set'
 
-    key_str = 'name=hdr.int_header.instruction_mk,value=' + str(int(0xFF00))
-    key_tuple = table_operator.get_key_tuple_from_input(key_str)
+    # key_str = 'name=hdr.int_header.instruction_mk,value=' + str(int(0xFF00))
+    # key_tuple = table_operator.get_key_tuple_from_input(key_str)
 
-    data_str = 'name=totp_code,val=4294967295'
-    data_tuple = table_operator.get_data_tuple_from_input(data_str)
+    # data_str = 'name=totp_code,val=4294967295'
+    # data_tuple = table_operator.get_data_tuple_from_input(data_str)
 
-    table_operator.mod_entry(table_name=table_name, key_tuples=[key_tuple], data_tuples=[data_tuple], action_name=action_name)
+    # table_operator.mod_entry(table_name=table_name, key_tuples=[key_tuple], data_tuples=[data_tuple], action_name=action_name)
+
+
+    table_name = 'Int_transit.tb_int_transit'
+    action_name = 'configure_transit'
+
+    data_str_switch_id = 'name=switch_id,val=' + str(55)
+    data_tuple_switch_id = table_operator.get_data_tuple_from_input(data_str_switch_id)
+
+    data_str_l3_mtu = 'name=l3_mtu,val=' + str(1500)
+    data_tuple_l3_mtu = table_operator.get_data_tuple_from_input(data_str_l3_mtu)
+
+    table_operator.set_default_entry(table_name=table_name, data_tuples=[data_tuple_switch_id, data_tuple_l3_mtu], action_name=action_name)

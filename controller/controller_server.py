@@ -40,9 +40,9 @@ def app_init():
         password= app.config['mysql_password'],
         db= app.config['mysql_database_name'])
 
-    app.config['udp_receiver'] = UdpReceiver(interface= 'ens33')
+    app.config['udp_receiver'] = UdpReceiver(interface= 'veth22')
 
-    # sniff_int_packets()
+    sniff_int_packets()
 
 def add_switch_info(data):
     sql_dict = {}
@@ -130,8 +130,8 @@ def switch_info_add():
     data = request.get_json()
     print(data)
     result = add_switch_info(data)
+    
     if result:
-        
         response = make_response('succeed',200)
     else:
         response = make_response('failed',400)
@@ -207,7 +207,7 @@ def sniff_int_packets():
     print('--- sniff int process initing... ---')
     udp_receiver = app.config['udp_receiver']
     def run_job_udp_sniff():
-        udp_receiver.udp_sniff()
+        pkt = udp_receiver.udp_sniff()
         
     
     def run_job_mq_get():
@@ -234,4 +234,4 @@ def sniff_int_packets():
 if __name__ == '__main__':
     print(os.path)
     app_init()
-    app.run(debug = True, host = app.config['local_server_ip'], port = app.config['listen_port'])
+    app.run(debug = False, host = app.config['local_server_ip'], port = app.config['listen_port'])

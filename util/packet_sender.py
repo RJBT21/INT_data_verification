@@ -71,4 +71,22 @@ if __name__ == '__main__':
     # print(totp_code_bytes)
 
     interface = 'veth20'
-    packet_sender.send_ipv4(interface=interface)
+    sleep_time = 200
+    while sleep_time > 0:
+        packet_sender.send_ipv4(interface=interface)
+        time.sleep(0.2)
+        sleep_time -= 1
+    # packet_sender.send_ipv4(interface=interface)
+    
+    # start_time = time.time()
+    # time.sleep(1)
+    # end_time = time.time()
+    # fractional_seconds = time.perf_counter() % 1
+    # start_time_microseconds = int(start_time * 1e6) + int(fractional_seconds * 1e6)
+    # end_time_microseconds = int(end_time * 1e6) + int(fractional_seconds * 1e6)
+    # execution_time = end_time_microseconds - start_time_microseconds
+    # print(execution_time * 1e-3)
+
+# 2653725000000
+# 2656238750000
+

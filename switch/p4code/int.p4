@@ -21,12 +21,8 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include <core.p4>
-#ifdef BMV2
-#include <v1model.p4>
-#elif TOFINO
 #include <tna.p4>
 typedef bit<32> data_t;
-#endif
 #include "include/headers.p4"
 #include "include/parser.p4"
 #include "include/int_source.p4"
@@ -36,38 +32,6 @@ typedef bit<32> data_t;
 #include "include/port_forward.p4"
 
 
-#ifdef BMV2
-control ingress(inout headers hdr, inout metadata meta, inout standard_metadata_t ig_intr_md) {
-	apply {
-		if (!hdr.udp.isValid() && !hdr.tcp.isValid())
-			exit;
-
-		// in case of INT source port add main INT headers
-		Int_source.apply(hdr, meta, ig_intr_md);
-
-		// perform minimalistic L1 or L2 frame forwarding
-		// set egress_port for the frame
-		Forward.apply(hdr, meta, ig_intr_md);
-		PortForward.apply(hdr, meta, ig_intr_md);
-
-		// in case of sink node make packet clone I2E in order to create INT report
-		// which will be send to INT reporting port
-		Int_sink_config.apply(hdr, meta, ig_intr_md);
-	}
-}
-
-control egress(inout headers hdr, inout metadata meta, inout standard_metadata_t eg_intr_md) {
-	apply {
-		Int_transit.apply(hdr, meta, eg_intr_md);
-		// in case of the INT sink port remove INT headers
-		// when frame duplicate on the INT report port then reformat frame into INT report frame
-		Int_sink.apply(hdr, meta, eg_intr_md);
-	}
-}
-
-V1Switch(ParserImpl(), verifyChecksum(), ingress(), egress(), computeChecksum(), DeparserImpl()) main;
-
-#elif TOFINO
 control Ingress(inout headers hdr, inout metadata meta,
 	/* Intrinsic */
 	in ingress_intrinsic_metadata_t ig_intr_md,
@@ -114,7 +78,6 @@ control Egress(inout headers hdr, inout metadata meta,
 
 Pipeline(IngressParser(), Ingress(), IngressDeparser(), EgressParser(), Egress(), EgressDeparser()) pipe;
 Switch(pipe) main;
-#endif
 
 
 
