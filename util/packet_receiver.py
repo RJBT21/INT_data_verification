@@ -3,6 +3,9 @@ import socket
 from scapy.all import sniff,bytes_hex,hex_bytes
 from multiprocessing import Process,Queue
 import datetime,time
+import sys
+sys.path.append('.')
+from encrypt_util import EncryptUtil
 
 QUEUE_CAPACITY = 100
 
@@ -14,6 +17,16 @@ class UdpReceiver(object):
         self.totp_offset = self.get_totp_offset()
         self.switch_id_offset = self.get_switch_id_offset()
         self.ingress_tstimestamp_offset = self.get_ingress_tstimestamp_offset()
+        self.int_data_offset = self.get_int_data_offset()
+        self.encrypt_tool = EncryptUtil()
+
+    def get_int_data_offset(self):
+        eth_len = 14
+        ip4_len = 20
+        udp_len = 8
+        total = eth_len + ip4_len + udp_len
+        int_data_offset = 2 * total
+        return int_data_offset
 
     def get_ingress_tstimestamp_offset(self):
         eth_len = 14
@@ -205,7 +218,10 @@ class UdpReceiver(object):
         count = 0
         # packet = sniff(filter= filter, store = True, iface = self.interface,prn=lambda x:x.summary())
         def packet_sniff():
-            packet = sniff(filter= filter, store = 1, iface = self.interface, prn = self.packet_process)
+            if self.interface == 'veth22':
+                packet = sniff(filter= filter, store = 1, iface = self.interface, prn = self.packet_process)
+            elif self.interface == 'veth28':
+                packet = sniff(filter= filter, store = 1, iface = self.interface, prn = self.packet_process_decrypt)
             print(packet)
         packet_sniff()
         # p = Process(target=packet_sniff)
@@ -213,6 +229,24 @@ class UdpReceiver(object):
         # p.start()
         # print('--- udp sniff started! ---')
         # p.join()
+
+    def packet_process_decrypt(self, packet):
+        start_time = time.time()
+
+        raw_packet = bytes_hex(packet)
+        encrypt_int_data = raw_packet[self.int_data_offset:]
+        print(encrypt_int_data)
+        decrypt_int_data = self.encrypt_tool.decrypt(bytearray(encrypt_int_data))
+        print(decrypt_int_data)
+
+        end_time = time.time()
+        fractional_seconds = time.perf_counter() % 1
+        start_time_microseconds = int(start_time * 1e6) + int(fractional_seconds * 1e6)
+        end_time_microseconds = int(end_time * 1e6) + int(fractional_seconds * 1e6)
+        execution_time = end_time_microseconds - start_time_microseconds
+        print(f"|||| execution time : {execution_time} us ||||")
+
+
 
     def packet_process(self, packet):
         start_time = time.time()
@@ -348,20 +382,20 @@ class UdpReceiver(object):
 
 if __name__ == '__main__':
     print('--- packet_receiver starting... ---')
-    udpReceiver = UdpReceiver(interface= 'veth22')
-    # udpReceiver.udp_sniff()
+    udpReceiver = UdpReceiver(interface= 'veth28')
+    udpReceiver.udp_sniff()
   
-  # 使用 time 函数获取秒级别的时间戳
-    seconds = time.time()
+#   # 使用 time 函数获取秒级别的时间戳
+#     seconds = time.time()
 
-    # 使用 perf_counter 函数获取相对高精度的时间戳
-    fractional_seconds = time.perf_counter() % 1
+#     # 使用 perf_counter 函数获取相对高精度的时间戳
+#     fractional_seconds = time.perf_counter() % 1
 
-    # 计算总的时间戳，精度在微秒级别
-    current_time_microseconds = int(seconds * 1e6) + int(fractional_seconds * 1e6)
+#     # 计算总的时间戳，精度在微秒级别
+#     current_time_microseconds = int(seconds * 1e6) + int(fractional_seconds * 1e6)
 
-    # 打印当前时间的微秒级别表示
-    print(f"Current time in microseconds: {current_time_microseconds}")
+#     # 打印当前时间的微秒级别表示
+#     print(f"Current time in microseconds: {current_time_microseconds}")
 
     # udpReceiver.start_udp_server(53)
 
